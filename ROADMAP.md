@@ -335,7 +335,7 @@ If you want to do improvements immediately:
 
 ### Step 1: Fix requirements.txt (5 minutes)
 ```bash
-cd c:\Users\lwfeckesim\04_peakfinder
+cd <path_to_peakfinder>
 pip freeze > requirements_new.txt
 ```
 Then edit `requirements_new.txt` to fix `skimage==0.0` → `scikit-image==0.23.2`

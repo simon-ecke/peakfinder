@@ -4,7 +4,7 @@
 
 ### 1. Run the App
 ```bash
-cd c:\Users\lwfeckesim\04_peakfinder
+cd <path_to_peakfinder>
 streamlit run app.py
 ```
 
