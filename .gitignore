@@ -60,3 +60,6 @@ __temp__/
 # OS
 Thumbs.db
 .DS_Store
+
+# Local launcher with personal paths
+launcher_local.bat
