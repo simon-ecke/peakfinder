@@ -39,30 +39,39 @@ from peakfinder.modules.segmentation import segment_trees, match_and_visualize_u
 # =====================================================
 st.set_page_config(
     page_title="Peakfinder – UAV Tree Height Analysis",
+    page_icon="🌲",
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
         "Get Help": "https://github.com",
         "Report a bug": "https://github.com",
-        "About": "Peakfinder v1.0 – UAV-based Tree Height Analysis"
+        "About": "Peakfinder v2.0 – Professional UAV-based Tree Height Analysis"
     }
 )
 
-# Modern color scheme
+# Modern color scheme with enhanced palette
 COLORS = {
-    "primary": "#0078D4",
-    "success": "#107C10",
-    "warning": "#FFB900",
-    "danger": "#D83B01",
-    "info": "#0078D4",
-    "light": "#F3F2F1",
-    "dark": "#323130",
+    "primary": "#2C7A7B",      # Teal
+    "primary_dark": "#1F5757",
+    "primary_light": "#E0F2F1",
+    "success": "#059669",       # Emerald green
+    "warning": "#F59E0B",       # Amber
+    "danger": "#DC2626",        # Red
+    "info": "#0EA5E9",          # Sky blue
+    "light": "#F8FAFC",
+    "card_bg": "#FFFFFF",
+    "text_primary": "#1E293B",
+    "text_secondary": "#64748B",
+    "border": "#E2E8F0",
+    "hover": "#F1F5F9",
 }
 
-# Advanced CSS styling for modern appearance
+# Advanced CSS styling for modern, professional appearance
 st.markdown(
     f"""
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    
     :root {{
         --primary-color: {COLORS['primary']};
         --success-color: {COLORS['success']};
@@ -72,144 +81,302 @@ st.markdown(
     
     /* Overall styling */
     .main {{
-        background: #FAFAF9;
+        background: linear-gradient(135deg, {COLORS['light']} 0%, #FFFFFF 100%);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     }}
     
     .block-container {{
-        padding-top: 1rem;
-        padding-left: 1.5rem;
-        padding-right: 1.5rem;
+        padding-top: 2rem;
+        padding-left: 2rem;
+        padding-right: 2rem;
+        max-width: 1400px;
     }}
     
     /* Headers and typography */
     h1 {{
-        color: {COLORS['dark']};
+        color: {COLORS['text_primary']};
         font-weight: 700;
         margin-bottom: 0.5rem;
-        font-size: 2.5rem;
+        font-size: 2.75rem;
+        letter-spacing: -0.02em;
+        background: linear-gradient(135deg, {COLORS['primary']} 0%, {COLORS['primary_dark']} 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }}
     
     h2 {{
-        color: {COLORS['dark']};
+        color: {COLORS['text_primary']};
         font-weight: 600;
-        margin-top: 1.5rem;
-        margin-bottom: 0.75rem;
-        border-bottom: 2px solid {COLORS['primary']};
-        padding-bottom: 0.5rem;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        border-bottom: 3px solid {COLORS['primary']};
+        padding-bottom: 0.75rem;
+        font-size: 1.875rem;
+        letter-spacing: -0.01em;
     }}
     
     h3 {{
-        color: {COLORS['dark']};
+        color: {COLORS['text_primary']};
         font-weight: 600;
+        font-size: 1.25rem;
+        margin-top: 1rem;
     }}
     
     /* Status badges */
     .status-badge {{
         display: inline-block;
-        padding: 0.4rem 0.8rem;
-        border-radius: 20px;
-        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+        border-radius: 24px;
+        font-size: 0.875rem;
         font-weight: 600;
-        margin-right: 0.5rem;
+        margin-right: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }}
     
     .status-success {{
-        background-color: #D1E7DD;
-        color: #0F5132;
+        background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+        color: #065F46;
+        border: 1px solid #6EE7B7;
     }}
     
     .status-warning {{
-        background-color: #FFF3CD;
-        color: #664D03;
+        background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+        color: #92400E;
+        border: 1px solid #FCD34D;
     }}
     
     .status-info {{
-        background-color: #CFF4FC;
-        color: #055160;
+        background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+        color: #1E40AF;
+        border: 1px solid #93C5FD;
     }}
     
     /* Cards and sections */
     .card {{
-        background: white;
-        border-left: 4px solid {COLORS['primary']};
-        padding: 1.2rem;
-        border-radius: 8px;
-        margin: 1rem 0;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        background: {COLORS['card_bg']};
+        border-left: 5px solid {COLORS['primary']};
+        padding: 1.75rem;
+        border-radius: 12px;
+        margin: 1.25rem 0;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        transition: all 0.3s ease;
+        border: 1px solid {COLORS['border']};
+    }}
+    
+    .card:hover {{
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        transform: translateY(-2px);
     }}
     
     .info-box {{
-        background: #E7F1FF;
-        border-left: 4px solid {COLORS['info']};
-        padding: 1rem;
-        border-radius: 4px;
-        margin: 0.5rem 0;
+        background: linear-gradient(135deg, {COLORS['primary_light']} 0%, #F0FDFA 100%);
+        border-left: 5px solid {COLORS['info']};
+        padding: 1.25rem;
+        border-radius: 8px;
+        margin: 0.75rem 0;
+        border: 1px solid #99F6E4;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }}
     
     /* Buttons */
     .stButton > button {{
-        background-color: {COLORS['primary']};
+        background: linear-gradient(135deg, {COLORS['primary']} 0%, {COLORS['primary_dark']} 100%);
         color: white;
         font-weight: 600;
-        border-radius: 6px;
+        border-radius: 8px;
         border: none;
-        padding: 0.6rem 1.2rem;
+        padding: 0.75rem 1.5rem;
         transition: all 0.3s ease;
+        box-shadow: 0 4px 6px -1px rgba(44, 122, 123, 0.3);
+        font-size: 0.95rem;
+        letter-spacing: 0.01em;
     }}
     
     .stButton > button:hover {{
-        background-color: #006BA6;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 120, 212, 0.3);
+        background: linear-gradient(135deg, {COLORS['primary_dark']} 0%, {COLORS['primary']} 100%);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 15px -3px rgba(44, 122, 123, 0.4);
     }}
     
-    /* Sliders and inputs */
+    .stButton > button:active {{
+        transform: translateY(-1px);
+    }}
+    
+    /* Primary button variant */
+    .stButton > button[kind="primary"] {{
+        background: linear-gradient(135deg, {COLORS['success']} 0%, #047857 100%);
+        box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.3);
+    }}
+    
+    .stButton > button[kind="primary"]:hover {{
+        background: linear-gradient(135deg, #047857 0%, {COLORS['success']} 100%);
+        box-shadow: 0 10px 15px -3px rgba(5, 150, 105, 0.4);
+    }}
+    
+    /* Text inputs */
+    .stTextInput > div > div > input {{
+        border-radius: 8px;
+        border: 2px solid {COLORS['border']};
+        padding: 0.75rem;
+        transition: all 0.2s ease;
+    }}
+    
+    .stTextInput > div > div > input:focus {{
+        border-color: {COLORS['primary']};
+        box-shadow: 0 0 0 3px {COLORS['primary_light']};
+    }}
+    
+    /* Sliders */
     .stSlider {{
-        margin: 1rem 0;
+        margin: 1.25rem 0;
+    }}
+    
+    .stSlider > div > div > div > div {{
+        background-color: {COLORS['primary']};
+    }}
+    
+    /* Number inputs */
+    .stNumberInput > div > div > input {{
+        border-radius: 8px;
+        border: 2px solid {COLORS['border']};
+        padding: 0.75rem;
+    }}
+    
+    .stNumberInput > div > div > input:focus {{
+        border-color: {COLORS['primary']};
+        box-shadow: 0 0 0 3px {COLORS['primary_light']};
+    }}
+    
+    /* Checkboxes */
+    .stCheckbox {{
+        padding: 0.5rem 0;
     }}
     
     /* Divider */
     .divider {{
-        border-top: 2px solid {COLORS['light']};
-        margin: 2rem 0;
+        border-top: 2px solid {COLORS['border']};
+        margin: 2.5rem 0;
     }}
     
     /* Caption and helper text */
     .stCaption {{
-        color: #605E5C;
-        font-size: 0.9rem;
+        color: {COLORS['text_secondary']};
+        font-size: 0.95rem;
+        font-weight: 400;
     }}
     
     .helper-text {{
-        font-size: 0.85rem;
-        color: #605E5C;
+        font-size: 0.875rem;
+        color: {COLORS['text_secondary']};
         margin: 0.5rem 0;
+        line-height: 1.6;
     }}
     
-    /* Tabs styling */
-    .stTabs {{
-        margin-top: 1.5rem;
-    }}
-    
-    /* Metric display */
-    .metric-display {{
-        background: white;
-        padding: 1rem;
+    /* Expanders */
+    .streamlit-expanderHeader {{
+        background-color: {COLORS['hover']};
         border-radius: 8px;
-        border: 1px solid #E1DFDD;
-        text-align: center;
+        font-weight: 600;
+        color: {COLORS['text_primary']};
     }}
     
-    .metric-value {{
-        font-size: 2rem;
+    /* Metric cards */
+    [data-testid="stMetricValue"] {{
+        font-size: 2.25rem;
         font-weight: 700;
         color: {COLORS['primary']};
     }}
     
-    .metric-label {{
-        font-size: 0.9rem;
-        color: #605E5C;
-        margin-top: 0.3rem;
+    [data-testid="stMetricLabel"] {{
+        font-size: 1rem;
+        color: {COLORS['text_secondary']};
+        font-weight: 500;
+    }}
+    
+    /* Dataframes */
+    .stDataFrame {{
+        border: 1px solid {COLORS['border']};
+        border-radius: 8px;
+        overflow: hidden;
+    }}
+    
+    /* Download button */
+    .stDownloadButton > button {{
+        background: linear-gradient(135deg, {COLORS['info']} 0%, #0284C7 100%);
+        box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.3);
+    }}
+    
+    .stDownloadButton > button:hover {{
+        background: linear-gradient(135deg, #0284C7 0%, {COLORS['info']} 100%);
+        box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.4);
+    }}
+    
+    /* Success/Error/Warning messages */
+    .stSuccess {{
+        background-color: #D1FAE5;
+        border-left: 5px solid {COLORS['success']};
+        border-radius: 8px;
+        padding: 1rem;
+    }}
+    
+    .stError {{
+        background-color: #FEE2E2;
+        border-left: 5px solid {COLORS['danger']};
+        border-radius: 8px;
+        padding: 1rem;
+    }}
+    
+    .stWarning {{
+        background-color: #FEF3C7;
+        border-left: 5px solid {COLORS['warning']};
+        border-radius: 8px;
+        padding: 1rem;
+    }}
+    
+    .stInfo {{
+        background-color: #DBEAFE;
+        border-left: 5px solid {COLORS['info']};
+        border-radius: 8px;
+        padding: 1rem;
+    }}
+    
+    /* Sidebar */
+    section[data-testid="stSidebar"] {{
+        background: linear-gradient(180deg, {COLORS['card_bg']} 0%, {COLORS['light']} 100%);
+        border-right: 1px solid {COLORS['border']};
+    }}
+    
+    /* Header styling */
+    .header-container {{
+        background: linear-gradient(135deg, {COLORS['card_bg']} 0%, {COLORS['light']} 100%);
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        border: 1px solid {COLORS['border']};
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }}
+    
+    /* Step headers */
+    .step-header {{
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.5rem;
+    }}
+    
+    .step-number {{
+        background: linear-gradient(135deg, {COLORS['primary']} 0%, {COLORS['primary_dark']} 100%);
+        color: white;
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.25rem;
+        box-shadow: 0 4px 6px -1px rgba(44, 122, 123, 0.3);
     }}
     </style>
     """,
@@ -217,12 +384,20 @@ st.markdown(
 )
 
 # Header with branding
-col_header1, col_header2, col_header3 = st.columns([2, 1, 1])
+st.markdown('<div class="header-container">', unsafe_allow_html=True)
+col_header1, col_header2 = st.columns([3, 1])
 with col_header1:
     st.title("🌲 Peakfinder")
-    st.caption("UAV-Based Tree Height Analysis • Raster + Database Workflows")
-with col_header3:
-    st.write(f"**Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    st.caption("🚁 UAV-Based Tree Height Analysis • Advanced Raster & Database Workflows")
+with col_header2:
+    st.markdown(f"""
+    <div style="text-align: right; padding-top: 1rem;">
+        <div style="font-size: 0.85rem; color: {COLORS['text_secondary']}; font-weight: 500;">
+            Updated<br>{datetime.now().strftime('%Y-%m-%d')}<br>{datetime.now().strftime('%H:%M')}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
 
 # =====================================================
@@ -644,39 +819,64 @@ def raster_viewer(path: str, title: str, key_prefix: str = "viewer"):
 
     disp = _stretch(arr_small, p_low=p_low, p_high=p_high)
 
-    # Header with metadata
-    col_title, col_info = st.columns([3, 2])
+    # Header section with enhanced styling
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    col_title, col_meta1, col_meta2 = st.columns([2, 1, 1])
+    
     with col_title:
-        st.subheader(title)
-    with col_info:
+        st.markdown(f"### {title}")
+    
+    with col_meta1:
         st.markdown(
-            f'<span class="helper-text">📊 {h:,} × {w:,} px</span>',
+            f'<div style="text-align: center; padding: 0.5rem; background: {COLORS["primary_light"]}; border-radius: 8px;">'
+            f'<div style="font-size: 0.75rem; color: {COLORS["text_secondary"]}; font-weight: 600;">DIMENSIONS</div>'
+            f'<div style="font-size: 1.1rem; font-weight: 700; color: {COLORS["primary"]};">{h:,} × {w:,}</div>'
+            f'<div style="font-size: 0.75rem; color: {COLORS["text_secondary"]};">pixels</div>'
+            f'</div>',
             unsafe_allow_html=True
         )
+    
+    with col_meta2:
+        if profile:
+            try:
+                res = profile.get('transform')[0]
+                st.markdown(
+                    f'<div style="text-align: center; padding: 0.5rem; background: {COLORS["primary_light"]}; border-radius: 8px;">'
+                    f'<div style="font-size: 0.75rem; color: {COLORS["text_secondary"]}; font-weight: 600;">RESOLUTION</div>'
+                    f'<div style="font-size: 1.1rem; font-weight: 700; color: {COLORS["primary"]};">{res:.3f}</div>'
+                    f'<div style="font-size: 0.75rem; color: {COLORS["text_secondary"]};">m/px</div>'
+                    f'</div>',
+                    unsafe_allow_html=True
+                )
+            except:
+                pass
 
-    # Display image
+    # Display image with border
+    st.markdown('<div style="border: 2px solid ' + COLORS["border"] + '; border-radius: 8px; overflow: hidden; margin: 1rem 0;">', unsafe_allow_html=True)
     st.image(disp, use_column_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
     # Stretch slider
     st.slider(
-        "Contrast stretch (percentiles)",
+        "🎨 Contrast Stretch (percentiles)",
         0.0, 100.0,
         value=(float(p_low), float(p_high)),
         step=0.5,
         key=range_key,
     )
 
-    # Metadata cards
+    # Additional metadata
     if profile:
-        col_crs, col_res = st.columns([1, 1])
+        col_crs, col_count = st.columns([2, 1])
         with col_crs:
-            st.markdown(f"**CRS**: {profile.get('crs', 'N/A')}", unsafe_allow_html=True)
-        with col_res:
-            try:
-                res = profile.get('transform')[0]
-                st.markdown(f"**Resolution**: {res:.3f} m/px", unsafe_allow_html=True)
-            except:
-                pass
+            crs_str = str(profile.get('crs', 'N/A'))
+            if len(crs_str) > 50:
+                crs_str = crs_str[:47] + "..."
+            st.markdown(f"<span style='color: {COLORS['text_secondary']}; font-size: 0.875rem;'><strong>CRS:</strong> {crs_str}</span>", unsafe_allow_html=True)
+        with col_count:
+            st.markdown(f"<span style='color: {COLORS['text_secondary']}; font-size: 0.875rem;'><strong>Bands:</strong> {profile.get('count', 'N/A')}</span>", unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 # =====================================================
@@ -699,8 +899,8 @@ main = st.container()
 # =========================================================
 with main:
     # ============== STEP 1: Path Setup ==============
-    st.markdown("## Step 1️⃣ – File Paths")
-    st.caption("Define input and output paths. Use 'Browse' to select files easily.")
+    st.markdown('<div class="step-header"><div class="step-number">1</div><h2 style="border: none; margin: 0; padding: 0;">File Paths</h2></div>', unsafe_allow_html=True)
+    st.caption("📂 Define input and output paths • Use 'Browse' to select files with ease")
     
     with st.container():
         st.markdown('<div class="card">', unsafe_allow_html=True)
@@ -745,22 +945,24 @@ with main:
 
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # Quick setup buttons
+    # Quick setup buttons with improved styling
+    st.markdown("#### ⚡ Quick Actions")
     col_quick1, col_quick2, col_quick3 = st.columns([2, 2, 2], gap="small")
     with col_quick1:
-        if st.button("🔄 Auto-fill from DSM", use_container_width=True):
+        if st.button("🔄 Auto-fill from DSM", use_container_width=True, key="autofill_paths"):
             if dsm_path and os.path.exists(dsm_path):
                 base = os.path.splitext(dsm_path)[0]
                 st.session_state["dtm_path"] = base.replace("_DSM", "_DTM") + ".tif"
                 st.session_state["ndsm_path"] = base.replace("_DSM", "_nDSM") + ".tif"
-                st.success("✓ Paths auto-filled")
+                st.success("✓ Paths auto-filled successfully")
             else:
-                st.error("Select an existing DSM first")
+                st.error("⚠️ Select an existing DSM first")
 
     st.markdown("---")
     
     # ============== STEP 2: nDSM Creation ==============
-    st.markdown("## Step 2️⃣ – Create or Load nDSM")
+    st.markdown('<div class="step-header"><div class="step-number">2</div><h2 style="border: none; margin: 0; padding: 0;">Create or Load nDSM</h2></div>', unsafe_allow_html=True)
+    st.caption("🌐 Generate normalized Digital Surface Model or load existing")
     
     col_ndsm_left, col_ndsm_right = st.columns([1, 1], gap="large")
     
@@ -845,8 +1047,8 @@ with main:
     st.markdown("---")
     
     # ============== STEP 3: Fetch Field Positions (DB) ==============
-    st.markdown("## Step 3️⃣ – Fetch Field Positions (DB)")
-    st.caption("Load field-measured stem positions from database and visualize all plots.")
+    st.markdown('<div class="step-header"><div class="step-number">3</div><h2 style="border: none; margin: 0; padding: 0;">Fetch Field Positions (DB)</h2></div>', unsafe_allow_html=True)
+    st.caption("🗄️ Load field-measured stem positions from database and visualize all plots")
 
     col_db_a, col_db_b = st.columns([1, 1], gap="small")
     with col_db_a:
@@ -917,8 +1119,8 @@ with main:
     st.markdown("---")
     
     # ============== STEP 4: Marker-Based Watershed Segmentation ==============
-    st.markdown("## Step 4️⃣ – Marker-Based Watershed Segmentation")
-    st.caption("Delineate individual tree crowns using detected treetops as markers")
+    st.markdown('<div class="step-header"><div class="step-number">4</div><h2 style="border: none; margin: 0; padding: 0;">Marker-Based Watershed Segmentation</h2></div>', unsafe_allow_html=True)
+    st.caption("🌳 Delineate individual tree crowns using detected treetops as markers")
     
     col_seg_left, col_seg_right = st.columns([1, 1], gap="large")
     
@@ -1035,18 +1237,30 @@ with main:
     # Summary stats
     if st.session_state.get("seg_labels_max") is not None:
         st.divider()
+        st.markdown("### 📊 Segmentation Summary")
         col_stat1, col_stat2 = st.columns(2)
         with col_stat1:
-            st.metric("🌲 Segments Detected", st.session_state['seg_labels_max'])
+            st.metric("🌲 Tree Segments", st.session_state['seg_labels_max'])
         with col_stat2:
-            st.metric("🎯 Segmentation Tree Tops", st.session_state['seg_n_tops'])
+            st.metric("🎯 Detected Treetops", st.session_state['seg_n_tops'])
     
     st.markdown("---")
-    st.info("💡 **Tip:** If results look odd, the issue is likely data quality (DTM interpolation, nodata values, CRS/units).")
+    st.markdown(
+        f'<div style="background: linear-gradient(135deg, {COLORS["primary_light"]} 0%, #E0F2F1 100%); '
+        f'border-left: 5px solid {COLORS["info"]}; padding: 1.25rem; border-radius: 8px; '
+        f'border: 1px solid {COLORS["border"]};">'
+        f'<div style="display: flex; align-items: center; gap: 0.75rem;">'
+        f'<span style="font-size: 1.5rem;">💡</span>'
+        f'<span style="color: {COLORS["text_primary"]}; font-weight: 500;">'
+        f'<strong>Tip:</strong> If results look odd, the issue is likely data quality '
+        f'(DTM interpolation, nodata values, CRS/units).</span>'
+        f'</div></div>',
+        unsafe_allow_html=True
+    )
 
     # ============== STEP 5: Segment-Based Matching (using Step 4 segmentation) ==============
-    st.markdown("## Step 5️⃣ – Segment-Based Matching (Step 4 Results)")
-    st.caption("Match field stems with UAV treetops using the segmentation from Step 4.")
+    st.markdown('<div class="step-header"><div class="step-number">5</div><h2 style="border: none; margin: 0; padding: 0;">Segment-Based Matching</h2></div>', unsafe_allow_html=True)
+    st.caption("🎯 Match field stems with UAV treetops using the segmentation from Step 4")
 
     run_step5_matching = st.button("▶ Run Matching (Step 4 Segments)", use_container_width=False, key="run_step5_matching")
 
@@ -1159,7 +1373,8 @@ with main:
                 csv_bytes = df_results.to_csv(index=False).encode("utf-8")
                 
                 st.divider()
-                st.markdown("### 📥 Step 5 Results")
+                st.markdown('<div class="card">', unsafe_allow_html=True)
+                st.markdown("### 📥 Matching Results")
                 st.dataframe(df_results, use_container_width=True)
                 
                 # CSV export button
@@ -1170,6 +1385,7 @@ with main:
                     mime="text/csv",
                     use_container_width=True
                 )
+                st.markdown('</div>', unsafe_allow_html=True)
 
                     
             except Exception as e:
@@ -1178,8 +1394,8 @@ with main:
     st.markdown("---")
 
     # ============== STEP 6: Height Distribution Analysis ==============
-    st.markdown("## Step 6️⃣ – Height Distribution Analysis")
-    st.caption("Analyze the height distribution of successfully matched trees")
+    st.markdown('<div class="step-header"><div class="step-number">6</div><h2 style="border: none; margin: 0; padding: 0;">Height Distribution Analysis</h2></div>', unsafe_allow_html=True)
+    st.caption("📊 Analyze the height distribution of successfully matched trees")
 
     col_analysis_left, col_analysis_right = st.columns([1, 1], gap="large")
     
@@ -1283,22 +1499,32 @@ with main:
         
         col_stats1, col_stats2 = st.columns([1, 2])
         with col_stats1:
+            st.markdown('<div class="card">', unsafe_allow_html=True)
             st.markdown("### 📊 Height Statistics")
             df_stats = pd.DataFrame(stats)
             st.dataframe(df_stats, hide_index=True, use_container_width=True)
+            st.markdown('</div>', unsafe_allow_html=True)
         
         with col_stats2:
+            st.markdown('<div class="card">', unsafe_allow_html=True)
             # Create additional visualizations - Box plot
             fig_box, ax_box = plt.subplots(figsize=(8, 4))
             bp = ax_box.boxplot([heights], vert=False, patch_artist=True, widths=0.5)
             bp['boxes'][0].set_facecolor(COLORS['info'])
             bp['boxes'][0].set_alpha(0.7)
+            bp['whiskers'][0].set_color(COLORS['primary'])
+            bp['whiskers'][1].set_color(COLORS['primary'])
+            bp['caps'][0].set_color(COLORS['primary'])
+            bp['caps'][1].set_color(COLORS['primary'])
+            bp['medians'][0].set_color(COLORS['danger'])
+            bp['medians'][0].set_linewidth(2.5)
             ax_box.set_xlabel('Tree Height (m)', fontsize=11, fontweight='bold')
-            ax_box.set_title('Height Distribution Box Plot', fontsize=12, fontweight='bold')
+            ax_box.set_title('📦 Height Distribution Box Plot', fontsize=12, fontweight='bold')
             ax_box.set_yticks([])
             ax_box.grid(axis='x', alpha=0.3, linestyle='--')
             plt.tight_layout()
             st.pyplot(fig_box, use_container_width=True)
             plt.close(fig_box)
+            st.markdown('</div>', unsafe_allow_html=True)
 
 
