@@ -926,17 +926,18 @@ with main:
         st.markdown('<div class="card">', unsafe_allow_html=True)
         
         with st.expander("⚙️ Segmentation Parameters", expanded=True):
-            seg_use_subset = st.checkbox("Use center subset (faster)", value=False)
-            seg_subset_size_m = st.slider("Subset size (m)", 50.0, 1000.0, 200.0, 25.0)
+            seg_use_subset = st.checkbox("Use center subset (faster)", value=False, help="Enable to process only a center subset of the nDSM for faster testing. Disable for full extent processing.")
+            seg_subset_size_m = st.slider("Subset size (m)", 50.0, 1000.0, 200.0, 25.0, help="Size of the center subset in meters. Increase for testing larger areas, decrease for quicker iterations during parameter tuning.")
             seg_use_db_extent = st.checkbox("Use DB extent (stems & corners)", value=True, help="Use the AOI derived from Step 3 (DB stems/corners) for the segmentation window")
-            seg_aoi_buffer_m = st.slider("AOI buffer (m)", 0.0, 100.0, 10.0, 1.0, help="Buffer to expand DB-derived AOI when creating subset")
-            seg_ground_threshold = st.slider("Ground threshold (m)", 0.0, 20.0, 5.0, 0.5)
-            seg_sigma_for_treetops = st.slider("Sigma for treetops", 0.0, 30.0, 10.0, 0.5)
-            seg_sigma_for_segmentation = st.slider("Sigma for segmentation", 0.0, 10.0, 1.0, 0.25)
-            seg_min_distance = st.slider("Min distance (px)", 1, 50, 5, 1)
-            seg_threshold_abs = st.slider("Peak threshold (m)", 0.0, 30.0, 5.0, 0.5)
-            seg_min_area_threshold = st.slider("Min segment area (px²)", 0, 10000, 1500, 50)
-            seg_compactness = st.slider("Watershed compactness", 0.0, 2.0, 0.2, 0.05)
+            seg_aoi_buffer_m = st.slider("AOI buffer (m)", 0.0, 100.0, 10.0, 1.0, help="Buffer to expand DB-derived AOI when creating subset. Increase if trees near the edge are cut off.")
+            seg_show_stems = st.checkbox("Show field stem positions", value=True, help="Display field stem positions (from Step 3) in the segmentation visualization. Useful for visual comparison between field data and detected tree crowns.")
+            seg_ground_threshold = st.slider("Ground threshold (m)", 0.0, 20.0, 5.0, 0.5, help="Minimum height above ground to be considered vegetation. Increase to filter out shrubs and low vegetation, decrease if missing small trees.")
+            seg_sigma_for_treetops = st.slider("Sigma for treetops", 0.0, 30.0, 10.0, 0.5, help="Gaussian smoothing for treetop detection. For larger tree crowns, increase to merge nearby peaks. For small, dense crowns, decrease to detect more individual peaks.")
+            seg_sigma_for_segmentation = st.slider("Sigma for segmentation", 0.0, 10.0, 1.0, 0.25, help="Gaussian smoothing for watershed segmentation. Increase to create smoother, larger segments (suitable for large crowns). Decrease for more detailed, smaller segments (suitable for small crowns).")
+            seg_min_distance = st.slider("Min distance (px)", 1, 50, 5, 1, help="Minimum distance between detected treetops in pixels. Increase if crowns are being over-segmented (too many peaks detected), decrease to separate closely spaced trees.")
+            seg_threshold_abs = st.slider("Peak threshold (m)", 0.0, 30.0, 5.0, 0.5, help="Minimum height of a peak to be considered a treetop. Increase to filter out shorter trees and noise, decrease if tall trees are being missed.")
+            seg_min_area_threshold = st.slider("Min segment area (px²)", 0, 10000, 1500, 50, help="Minimum segment size in pixels. Increase to filter out small, spurious segments (suitable for large crowns). Decrease if small tree crowns are being removed.")
+            seg_compactness = st.slider("Watershed compactness", 0.0, 2.0, 0.2, 0.05, help="Controls segment shape regularity. Increase for more circular, compact segments (useful for round crowns). Decrease for irregular, natural crown shapes.")
         
         run_seg = st.button("▶ Run Segmentation", type="primary", use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
@@ -1002,7 +1003,7 @@ with main:
                             subset_size_meters=float(seg_subset_size_m),
                             min_area_threshold=int(seg_min_area_threshold),
                             use_subset=bool(seg_use_subset),
-                            stems_utm=st.session_state.get("stems_utm"),
+                            stems_utm=st.session_state.get("stems_utm") if seg_show_stems else None,
                         )
                         # Store CRS for shapefile export later
                         try:
@@ -1174,5 +1175,130 @@ with main:
             except Exception as e:
                 st.error(f"❌ CSV export error: {str(e)[:150]}")
 
+    st.markdown("---")
+
+    # ============== STEP 6: Height Distribution Analysis ==============
+    st.markdown("## Step 6️⃣ – Height Distribution Analysis")
+    st.caption("Analyze the height distribution of successfully matched trees")
+
+    col_analysis_left, col_analysis_right = st.columns([1, 1], gap="large")
+    
+    with col_analysis_left:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        
+        with st.expander("⚙️ Visualization Parameters", expanded=True):
+            bin_size = st.slider("Height bin size (m)", 1.0, 10.0, 5.0, 0.5, help="Size of height classes for the histogram. Decrease for more detailed distribution, increase for broader overview.")
+            show_only_matched = st.checkbox("Show only matched trees", value=True, help="Display only successfully matched trees (green markers from Step 5). Uncheck to see all stems including unmatched ones.")
+            show_stats_table = st.checkbox("Show statistics table", value=True, help="Display detailed statistics including count, mean, median, min, max, and standard deviation.")
+        
+        run_analysis = st.button("▶ Run Analysis", type="primary", use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    with col_analysis_right:
+        st.markdown('<div class="card">', unsafe_allow_html=True)
+        
+        if run_analysis:
+            matching_results = st.session_state.get("matching_results_step5")
+            if not matching_results:
+                st.error("❌ Run Step 5 first to perform matching")
+            else:
+                try:
+                    with st.spinner("📊 Creating height distribution analysis..."):
+                        # Filter data based on checkbox
+                        if show_only_matched:
+                            # Only matched trees with valid heights
+                            data = [r for r in matching_results if r["match"] == 1 and r["UAV_Tree_Height_segment"] is not None]
+                            title_suffix = "Matched Trees"
+                        else:
+                            # All trees with valid heights
+                            data = [r for r in matching_results if r["UAV_Tree_Height_segment"] is not None]
+                            title_suffix = "All Trees with Heights"
+                        
+                        if not data:
+                            st.warning("⚠️ No height data available for analysis")
+                        else:
+                            heights = [r["UAV_Tree_Height_segment"] for r in data]
+                            
+                            # Create height bins
+                            max_height = max(heights)
+                            bins = np.arange(0, max_height + bin_size, bin_size)
+                            
+                            # Create histogram
+                            fig, ax = plt.subplots(figsize=(10, 6))
+                            counts, edges, patches = ax.hist(heights, bins=bins, edgecolor='black', color=COLORS['primary'], alpha=0.7)
+                            
+                            # Customize plot
+                            ax.set_xlabel('Tree Height (m)', fontsize=12, fontweight='bold')
+                            ax.set_ylabel('Count (Number of Trees)', fontsize=12, fontweight='bold')
+                            ax.set_title(f'Tree Height Distribution - {title_suffix}', fontsize=14, fontweight='bold')
+                            ax.grid(axis='y', alpha=0.3, linestyle='--')
+                            
+                            # Add count labels on top of bars
+                            for count, edge, patch in zip(counts, edges, patches):
+                                if count > 0:
+                                    height = patch.get_height()
+                                    ax.text(patch.get_x() + patch.get_width()/2., height,
+                                           f'{int(count)}',
+                                           ha='center', va='bottom', fontsize=9, fontweight='bold')
+                            
+                            # Format x-axis to show bin ranges
+                            bin_labels = [f'{int(edges[i])}-{int(edges[i+1])}' for i in range(len(edges)-1)]
+                            ax.set_xticks(edges[:-1] + bin_size/2)
+                            ax.set_xticklabels(bin_labels, rotation=45, ha='right')
+                            
+                            plt.tight_layout()
+                            st.session_state["analysis_fig"] = fig
+                            st.session_state["analysis_heights"] = heights
+                            st.session_state["analysis_data"] = data
+                            
+                            st.success(f"✅ Analysis complete: {len(data)} trees analyzed")
+                            
+                except Exception as e:
+                    st.error(f"❌ Analysis error: {str(e)[:150]}")
+        
+        # Display figure if available
+        if st.session_state.get("analysis_fig") is not None:
+            st.pyplot(st.session_state["analysis_fig"], use_container_width=True)
+            plt.close(st.session_state["analysis_fig"])
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Display statistics
+    if st.session_state.get("analysis_heights") is not None and show_stats_table:
+        st.divider()
+        heights = st.session_state["analysis_heights"]
+        
+        # Calculate statistics
+        stats = {
+            "Metric": ["Count", "Mean Height (m)", "Median Height (m)", "Min Height (m)", "Max Height (m)", "Std. Deviation (m)"],
+            "Value": [
+                len(heights),
+                f"{np.mean(heights):.2f}",
+                f"{np.median(heights):.2f}",
+                f"{np.min(heights):.2f}",
+                f"{np.max(heights):.2f}",
+                f"{np.std(heights):.2f}"
+            ]
+        }
+        
+        col_stats1, col_stats2 = st.columns([1, 2])
+        with col_stats1:
+            st.markdown("### 📊 Height Statistics")
+            df_stats = pd.DataFrame(stats)
+            st.dataframe(df_stats, hide_index=True, use_container_width=True)
+        
+        with col_stats2:
+            # Create additional visualizations - Box plot
+            fig_box, ax_box = plt.subplots(figsize=(8, 4))
+            bp = ax_box.boxplot([heights], vert=False, patch_artist=True, widths=0.5)
+            bp['boxes'][0].set_facecolor(COLORS['info'])
+            bp['boxes'][0].set_alpha(0.7)
+            ax_box.set_xlabel('Tree Height (m)', fontsize=11, fontweight='bold')
+            ax_box.set_title('Height Distribution Box Plot', fontsize=12, fontweight='bold')
+            ax_box.set_yticks([])
+            ax_box.grid(axis='x', alpha=0.3, linestyle='--')
+            plt.tight_layout()
+            st.pyplot(fig_box, use_container_width=True)
+            plt.close(fig_box)
 
 
